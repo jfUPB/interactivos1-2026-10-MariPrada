@@ -40,6 +40,85 @@ En cambio, con is_pressed() el micro:bit detecta si el botón está presionado t
 
 ## Bitácora de aplicación 
 
+### Actividad 05
+
+Código para el micro:bit 
+
+```python
+
+from microbit import *
+
+uart.init(baudrate=115200)
+
+while True:
+    if button_a.is_pressed():
+        uart.write('L')
+    elif button_b.is_pressed():
+        uart.write('R')
+    sleep(100)
+
+```
+CÓDIGO PARA P5.JS
+
+Me asegure primero que en el html estuviera la libreria necesaria
+
+<script src="https://unpkg.com/@gohai/p5.webserial@^1/libraries/p5.webserial.js"></script>
+
+Ahora el código en js
+
+```javascript
+let port;
+let connectBtn;
+let x;
+
+function setup() {
+  createCanvas(400, 400);
+  x = width / 2;
+
+  port = createSerial();
+  connectBtn = createButton('Connect to micro:bit');
+  connectBtn.position(120, 350);
+  connectBtn.mousePressed(connectBtnClick);
+}
+
+function draw() {
+  background(220);
+
+  if (port.availableBytes() > 0) {
+    let data = port.read(1);
+
+    if (data == 'L') {
+      x -= 5;
+    } 
+    else if (data == 'R') {
+      x += 5;
+    }
+  }
+
+  x = constrain(x, 25, width - 25);
+
+  ellipse(x, height / 2, 50, 50);
+
+  if (!port.opened()) {
+    connectBtn.html('Connect to micro:bit');
+  } else {
+    connectBtn.html('Disconnect');
+  }
+}
+
+function connectBtnClick() {
+  if (!port.opened()) {
+    port.open('MicroPython', 115200);
+  } else {
+    port.close();
+  }
+}
+```
+
+El sistema físico interactivo funciona usando los botones del micro:bit como entrada física. Cuando se presiona el botón A, el micro:bit envía una señal para mover el círculo a la izquierda, y cuando se presiona el botón B, envía una señal para moverlo a la derecha.
+
+p5.js recibe estos datos por comunicación serial y cambia la posición del círculo en la pantalla en tiempo real. De esta forma, el movimiento del objeto digital depende directamente de la interacción física con el micro:bit.
 
 
 ## Bitácora de reflexión
+
