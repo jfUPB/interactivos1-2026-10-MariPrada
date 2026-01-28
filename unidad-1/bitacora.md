@@ -122,3 +122,129 @@ p5.js recibe estos datos por comunicación serial y cambia la posición del cír
 
 ## Bitácora de reflexión
 
+### Actividad 06 - Explicación del sistema físico interactivo (micro:bit + p5.js)
+
+En esta actividad hice un sistema físico interactivo donde el micro:bit funciona como el control físico (input) y p5.js muestra el resultado en pantalla (output). Ambos se conectan por USB serial, que es como un “canal” para enviar letras entre el micro:bit y el computador en tiempo real.
+
+Empezaré explicando el codigo del micro:bit 
+
+1) Parte del micro:bit (input y envío de datos)
+
+El obejtivo del micro:bit en este sistema fisico interactivo es leer un botón y mandar un mensaje por serial para que p5.js lo reciba.
+
+Las primera tres lineas de código:
+
+```python
+from microbit import *
+uart.init(baudrate=115200)
+while True:
+```
+Es basicamente un ciclo donde se importan las funciones del micro:bit como botones y comunicación serial, luego se enciende la comunicación por el serial, y se determina si recibe algo o no recibe nada, repitiendose esto todo el tiempo.
+
+Con esta primera parte podemos responder de nuevo la pregunta de la actividad 04, ¿Porque no "funcionaba bien" cuando la orden era was_pressed()?
+
+was_pressed() dectecta el botón solo una vez, lo que hacia que el micro:bit mandara la información solo por un instante lo que hacia que en el p5.js eso se viera como un solo frame.
+
+Por lo cual se cambio a is_pressed() que puede funcionar mas como un estado, diciendome que mientras sostengo el botón sigue devolviendo true todo el tiempo.
+
+Algo así:
+
+```python
+if button_a.is_pressed():
+    uart.write('A')
+else:
+    uart.write('N')
+sleep(100)
+```
+Que dice que si oprimo el botón envio A y si no lo aprieto envio N constantemente. 
+
+Esto hace que p5.js siempre este recibiendo algo y el resultado se vuelva mas estable.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Ahora explicare la parte del p5.js
+
+2) Parte de p5.js (recibir datos y mostrar output)
+
+Ya se que p5.js está conectado al micro:bit, donde este se encarga de crear la parte visual y de leer lo que manda el micro:bit.
+
+Este consta de varias capas para programar:
+
+<img width="158" height="165" alt="image" src="https://github.com/user-attachments/assets/62916176-6754-41b1-8322-a2bb8137e315" />
+
+Siguiendo esta idea nuestro primer paso para que p5.js pueda comunicarse con el microbit es agregar en el codigo html, la libreria que necesitamos para la comunicación:
+
+<img width="813" height="45" alt="image" src="https://github.com/user-attachments/assets/de6dc338-7311-4edb-84eb-f09e33d2bf0f" />
+
+Ya con esto hecho, lo siguiente que hacemos es ya pasar a la parte del código en js, donde siempre tendremos que setear nuestras variables globales:
+
+```javascript
+let port;
+let connectBtn;
+```
+En este caso seteamos dos:
+Port;: que se encarga de guardar la conexión con el serial
+ConnectBtn;: siendo esta la "creación" del botón como tal.
+
+    Luego de setear las variables globales, tenemos que setear nuestro canva y el botón para poder conectar con el micro:bit
+    
+```javascript
+function setup() {
+  createCanvas(400, 400);
+  port = createSerial();
+  connectBtn = createButton('Connect to micro:bit');
+  connectBtn.mousePressed(connectBtnClick);
+}
+```
+En esta parte del codigo estamos creando tres cosas:
+
+Se crea el canva donde se dibuja
+Creamos el puerto serial que nos permite conexión
+Se crea un botón que al momento al que le damos click ejecuta a connectBtnClick()
+
+Luego de crear nuestro canva y el botón, seguimos a Draw donde se lee el serial en cada frame y se dibuja encima del canva
+
+
+```javascript
+if (port.availableBytes() > 0) {
+  let dataRx = port.read(1);
+  if (dataRx == "A") {
+    fill("red");
+  } else if (dataRx == "N") {
+    fill("green");
+  }
+}
+
+```
+
+En esta parte del código availableBytes() se encarga de revisar si llego información, read(1) lee la "letra" o la información que llega, en este caso si se recibe "A" cambia el color a "red" y si llega N vuelve a "green".
+Lo que hace este codigo es que permine a p5.js no "parpadear" porque constantemenete se le esta mandando información sea "A" o "N"
+
+Lo siguiente seria como se conecta y se desconecta el puerto
+
+```javascript
+function connectBtnClick() {
+  if (!port.opened()) {
+    port.open('MicroPython', 115200);
+  } else {
+    port.close();
+  }
+}
+```
+
+Que basicamente lo que se entiende en esta función es: 
+
+Si el puerto esta abierto significa que NO esta conectado y aparece Micropython y si esta cerrado esta Conectado.
+
+Conclusión: ¿por qué esto es un sistema físico interactivo?
+
+Porque hay un flujo claro:
+
+Input físico: presionar el botón del micro:bit.
+
+Comunicación: el micro:bit envía letras por serial.
+
+Proceso: p5.js interpreta esas letras.
+
+Output visual: se actualiza el dibujo en pantalla en tiempo real.
+
+Lo más importante que aprendí es que en sistemas interactivos no basta con enviar un mensaje una vez: muchas veces se necesita enviar un “estado” continuamente para que el output se mantenga estable.
