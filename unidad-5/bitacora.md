@@ -24,6 +24,11 @@ Porque en ASCII \n es un carácter especial, pero en binario solo es un número 
 
 
 ## Bitácora de aplicación 
+
+Quito el codigo comentado en el BridgeServer.js
+
+<img width="681" height="172" alt="image" src="https://github.com/user-attachments/assets/6dc8059e-8351-40c4-b3d6-d3987d624f3c" />
+
 En BridgeServer.js, elimina la referencia a const MicrobitBinaryAdapter = require("./adapters/MicrobitBinaryAdapter"); y también la condición dentro de la función createAdapter() que evalúa if (DEVICE === "microbit-bin").
 
 En su lugar, reutiliza el código de MicrobitASCIIAdapter2.js, realizando ajustes en la función _onChunk(chunk). Ya no es necesario mantener la función de parseo, ya que los datos dejan de manejarse como una línea de texto.
