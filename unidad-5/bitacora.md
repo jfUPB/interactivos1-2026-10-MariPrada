@@ -249,4 +249,9 @@ while True:
 ```
 </details>
 
+
+
+<img width="1357" height="673" alt="image" src="https://github.com/user-attachments/assets/de5f2023-d574-4852-aef7-f63f9e7a75f9" />
+
+
 ## Bitácora de reflexión
